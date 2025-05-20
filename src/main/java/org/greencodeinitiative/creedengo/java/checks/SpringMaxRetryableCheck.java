@@ -39,7 +39,7 @@ import java.util.List;
 public class SpringMaxRetryableCheck extends IssuableSubscriptionVisitor {
 
     public static final String MESSAGE_RULE = "Avoid using Pattern.compile() in a non-static context.";
-
+    private static final long MAX_TIMEOUT = 5000;
 
     @Override
     public List<Kind> nodesToVisit() {
@@ -58,5 +58,23 @@ public class SpringMaxRetryableCheck extends IssuableSubscriptionVisitor {
 //                methodTree.accept(visitor);
             }
         }
+    }
+    public boolean isGreaterThanMax (int maxAttempts, long delay, double multiplier){
+        return (calculateRetryTimeout(maxAttempts,delay,multiplier)>MAX_TIMEOUT);
+    }
+    public static long calculateRetryTimeout(Integer maxAttempts, Long delay, Double multiplier) {
+        int attempts = (maxAttempts != null) ? maxAttempts : 3;
+        long initialDelay = (delay != null) ? delay : 1000L;
+        double factor = (multiplier != null) ? multiplier : 1.0;
+        long total = 0;
+        long currentDelay = delay;
+
+        // First call doesn't delay, so start from second attempt
+        for (int i = 1; i < maxAttempts; i++) {
+            total += currentDelay;
+            currentDelay = (long) (currentDelay * multiplier);
+        }
+
+        return total;
     }
 }
