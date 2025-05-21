@@ -38,8 +38,10 @@ import java.util.List;
 @Rule(key = "GCI604")
 public class SpringMaxRetryableCheck extends IssuableSubscriptionVisitor {
 
-    public static final String MESSAGE_RULE = "Avoid using Pattern.compile() in a non-static context.";
+    public static final String MESSAGE_RULE = "Please use optimized @Retryable parameters .";
     private static final long MAX_TIMEOUT = 5000;
+    private static final int MAX_RETRY = 15;
+
 
     @Override
     public List<Kind> nodesToVisit() {
@@ -60,7 +62,7 @@ public class SpringMaxRetryableCheck extends IssuableSubscriptionVisitor {
         }
     }
     public boolean isGreaterThanMax (int maxAttempts, long delay, double multiplier){
-        return (calculateRetryTimeout(maxAttempts,delay,multiplier)>MAX_TIMEOUT);
+        return (calculateRetryTimeout(maxAttempts,delay,multiplier)>MAX_TIMEOUT) || maxAttempts>MAX_RETRY;
     }
     public static long calculateRetryTimeout(Integer maxAttempts, Long delay, Double multiplier) {
         int attempts = (maxAttempts != null) ? maxAttempts : 3;
